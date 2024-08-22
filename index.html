@@ -1,0 +1,195 @@
+<!DOCTYPE HTML> 
+<html>
+<head>
+    <title>Out of Paldea</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .title {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .description {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .pokemon-image {
+            display: none; /* Hide initially */
+            margin-bottom: 20px;
+        }
+
+        .pokemon-image img {
+            max-width: 90%; /* Set a larger max-width to scale up the image */
+            height: auto; /* Maintain aspect ratio */
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            /* Add a max-height to prevent the image from getting too tall */
+            max-height: 600px; 
+        }
+
+        .generate-button button {
+            padding: 10px 20px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        .generate-button button:disabled {
+            background-color: #9e9e9e; /* Change button color to indicate it's disabled */
+            cursor: not-allowed;
+        }
+
+        .generate-button button:hover:enabled {
+            background-color: #45a049;
+        }
+
+        .generated-images-container {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px; /* Space between images */
+            margin-top: 20px;
+            justify-content: center; /* Center images horizontally */
+            max-width: 100%;
+        }
+
+        .generated-images-container img {
+            width: 100%; /* Ensure images fill the column width */
+            height: auto; /* Maintain aspect ratio */
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            max-height: 150px; /* Set a max height for uniformity */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">Pokémon Not In Paldea Generator</div>
+        <div class="description">This is a Pokémon generator to generate Pokémon that are not available in the Paldea Pokedex (As of Aug 22, 2024).</div>
+        <div class="pokemon-image">
+            <img id="pokemonImg" src="" alt="Pokémon Image">
+        </div>
+        <div class="generate-button">
+            <button id="generateBtn" disabled>Generate Image</button>
+        </div>
+        <div class="generated-images-container">
+            <!-- Generated Pokémon images will be added here -->
+        </div>
+    </div>
+
+    <script>
+        let generationCount = 0; // Track the number of generations
+
+        function loadPokemonImages(start, end, callback) {
+            let imagesArray = [];
+            let imagesToProcess = end - start + 1; // Total images to process
+            let processedImages = 0; // Counter for processed images
+
+            for (let i = start; i <= end; i++) {
+                let img = new Image();
+                let formattedIndex = i.toString().padStart(3, '0'); // Format index as 001, 002, ..., 290
+                img.src = `Pokemon_Images/${formattedIndex}.png`; // Corrected string template
+
+                img.onload = () => {
+                    imagesArray.push(img);
+                    processedImages++;
+                    console.log(`Image ${formattedIndex}.png loaded.`); // Corrected string template
+
+                    // If all images have been processed, execute the callback
+                    if (processedImages === imagesToProcess) {
+                        callback(imagesArray);
+                    }
+                };
+                /*Error check
+                img.onerror = (event) => {
+                    console.error(`Error loading image ${formattedIndex}.png from URL: ${img.src}`); 
+                    console.error('Error details:', event.message || 'No additional details');
+                    processedImages++;
+
+                    // If all images have been processed, execute the callback
+                    if (processedImages === imagesToProcess) {
+                        callback(imagesArray);
+                    }
+                };*/
+            }
+        }
+
+        function displayRandomPokemon(imagesArray) {
+            // Generate a random index within the array
+            let randomIndex = Math.floor(Math.random() * imagesArray.length);
+            let pokemonImg = document.getElementById('pokemonImg');
+            
+            // Set the source of the image to the randomly selected one
+            pokemonImg.src = imagesArray[randomIndex].src;
+            pokemonImg.parentElement.style.display = 'block'; // Show the image div
+
+            // Add the generated Pokémon image to the container
+            let generatedImagesContainer = document.querySelector('.generated-images-container');
+            
+            // Check if we already have 6 images
+            let images = generatedImagesContainer.querySelectorAll('img');
+            if (images.length >= 6) {
+                // Remove the oldest image
+                generatedImagesContainer.removeChild(images[0]);
+            }
+            
+            // Add the new image
+            let img = new Image();
+            img.src = imagesArray[randomIndex].src;
+            img.alt = 'Generated Pokémon Image';
+            generatedImagesContainer.appendChild(img);
+
+            // Increment generation count and disable button if limit is reached
+            generationCount++;
+            if (generationCount >= 6) {
+                document.getElementById('generateBtn').disabled = true;
+            }
+        }
+
+        // Initialize image loading
+        let startRange = 1;
+        let endRange = 290;
+        let loadedImages = [];
+        let generateBtn = document.getElementById('generateBtn');
+
+        loadPokemonImages(startRange, endRange, (imagesArray) => {
+            loadedImages = imagesArray;
+            console.log("All images processed. Images in array:", loadedImages.length);
+            
+            // Enable the button once all images are loaded
+            generateBtn.disabled = false;
+        });
+
+        // Button click event
+        generateBtn.addEventListener('click', () => {
+            if (loadedImages.length > 0) {
+                displayRandomPokemon(loadedImages);
+            } else {
+                console.log("No images loaded yet.");
+            }
+        });
+    </script>
+
+</body>
+</html>
